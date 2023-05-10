@@ -12,7 +12,7 @@ from protocol import PacketID, Packet  # noqa
 class BravoDriver:
     """Low-level interface for sending and receiving serial data from the Bravo 7."""
 
-    def __init__(self, ip: str = "192.168.2.4", port: int = 6789) -> None:
+    def __init__(self, ip: str = "192.168.2.3", port: int = 6789) -> None:
         """Create a new driver.
 
         Args:
@@ -25,7 +25,7 @@ class BravoDriver:
 
         # Configure a new socket with the Bravo
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.settimeout(0)
+        self.sock.settimeout(1)
 
         self.poll_t = threading.Thread(target=self._poll)
         self.poll_t.setDaemon(True)
@@ -35,7 +35,7 @@ class BravoDriver:
     def connect(self) -> None:
         """Connect the driver to the Bravo 7."""
         self._running = True
-        self.poll_t.run()
+        self.poll_t.start()
 
     def disconnect(self) -> None:
         """Disconnect the driver from the Bravo 7."""
@@ -75,4 +75,10 @@ class BravoDriver:
                 if read_data == b"":
                     continue
 
-                # TODO(evan): See what data is sent and process it
+                try:
+                    data = Packet.decode(read_data)
+                except:
+                    ...
+                else:
+                    for func in self.callbacks[data.packet_id]:
+                        func(data)

@@ -12,3 +12,4 @@ class DeviceID(Enum):
     BEND_SHOULDER = 0x06
     ROTATE_BASE = 0x07
     ALL_JOINTS = 0xFF
+    FORCE_TORQUE_SENSOR = 0x0D
