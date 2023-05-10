@@ -1,0 +1,4 @@
+numpy
+crc
+cobs
+pytest

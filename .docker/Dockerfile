@@ -14,12 +14,10 @@ RUN apt-get -q update \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
+COPY . /
+
 # Install all required packages
-RUN python3 -m pip install -U \
-    numpy \
-    crc \
-    cobs \
-    pytest
+RUN python3 -m pip install -U -r requirements.txt
 
 # Install debugging/linting Python packages
 RUN python3 -m pip install -U \
