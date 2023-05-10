@@ -1,10 +1,9 @@
 from enum import Enum
 
-from cobs import cobs
-from crc import Calculator, Configuration
-
 
 class PacketID(Enum):
+    """The ID of a packet."""
+
     MODE = 0x01
     VELOCITY = 0x02
     POSITION = 0x03
@@ -37,38 +36,3 @@ class PacketID(Enum):
     ATI_FT_READING = 0xD8
     BOOTLOADER = 0xFF
     VOLTAGE_THRESHOLD_PARAMETERS = 0x99
-
-
-class DeviceID(Enum):
-    LINEAR_JAWS = 0x01
-    ROTATE_END_EFFECTOR = 0x02
-    BEND_ELBOW = 0x03
-    BEND_SHOULDER = 0x04
-    ROTATE_BASE = 0x05
-    ALL_JOINTS = 0xFF
-
-
-class Packet:
-    def __init__(
-        self, device_id: DeviceID, packet_id: PacketID, data: bytearray
-    ) -> None:
-        self.device_id = device_id
-        self.packet_id = packet_id
-
-        crc_config = Configuration(
-            width=8,
-            polynomial=0x4D,
-            init_value=0x00,
-            final_xor_value=0xFF,
-            reverse_input=True,
-            reverse_output=True,
-        )
-
-        self._crc_calculator = Calculator(crc_config)
-
-    def encode(self) -> bytearray:
-        ...
-
-    @classmethod
-    def decode(cls, data: bytearray) -> Packet:
-        ...
