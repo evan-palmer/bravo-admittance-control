@@ -5,8 +5,8 @@ import struct
 from cobs import cobs
 from crc import Calculator, Configuration
 
-from .packet_id import PacketID
 from .device_id import DeviceID
+from .packet_id import PacketID
 
 
 class Packet:

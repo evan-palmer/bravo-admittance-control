@@ -1,9 +1,10 @@
 import sys
+
 import pytest  # noqa
 
 sys.path.append("..")
 
-from protocol import Packet, DeviceID, PacketID  # noqa
+from protocol import DeviceID, Packet, PacketID  # noqa
 
 
 def test_packet_encoding() -> None:
