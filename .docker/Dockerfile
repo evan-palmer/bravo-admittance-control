@@ -18,7 +18,8 @@ RUN apt-get -q update \
 RUN python3 -m pip install -U \
     numpy \
     crc \
-    cobs
+    cobs \
+    pytest
 
 # Install debugging/linting Python packages
 RUN python3 -m pip install -U \
