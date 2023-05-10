@@ -76,9 +76,9 @@ class BravoDriver:
                     continue
 
                 try:
-                    data = Packet.decode(read_data)
-                except:
+                    packet = Packet.decode(read_data)
+                except Exception:
                     ...
                 else:
-                    for func in self.callbacks[data.packet_id]:
-                        func(data)
+                    for func in self.callbacks[packet.packet_id]:
+                        func(packet)

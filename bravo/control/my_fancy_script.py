@@ -22,12 +22,20 @@ if __name__ == "__main__":
 
     bravo.attach_callback(PacketID.ATI_FT_READING, what_is_going_on_cb)
 
-    request = Packet(DeviceID.FORCE_TORQUE_SENSOR, PacketID.REQUEST, bytes([PacketID.ATI_FT_READING.value]))
+    request = Packet(
+        DeviceID.FORCE_TORQUE_SENSOR,
+        PacketID.REQUEST,
+        bytes([PacketID.ATI_FT_READING.value]),
+    )
 
-    tare = Packet(DeviceID.FORCE_TORQUE_SENSOR, PacketID.ATI_FT_READING, struct.pack(">ffffff", 0, 0, 0, 0, 0, 0))
+    tare = Packet(
+        DeviceID.FORCE_TORQUE_SENSOR,
+        PacketID.ATI_FT_READING,
+        struct.pack(">ffffff", 0, 0, 0, 0, 0, 0),
+    )
 
     bravo.send(tare)
 
-    while(True):
+    while True:
         bravo.send(request)
         time.sleep(1.0)
