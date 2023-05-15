@@ -67,7 +67,6 @@ class AdmittanceController:
 
     def tare_ft_sensor(self) -> None:
         """Tare the Bravo 7 force-torque sensor."""
-        # The Bravo 7 expects big-endian packets
         tare = Packet(
             DeviceID.FORCE_TORQUE_SENSOR,
             PacketID.ATI_FT_READING,
