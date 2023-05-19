@@ -3,6 +3,10 @@ import struct
 import sys
 import threading
 import time
+from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
 
 sys.path.append("..")
 
@@ -10,13 +14,24 @@ from driver import BravoDriver  # noqa
 from protocol import DeviceID, Packet, PacketID  # noqa
 
 
+@dataclass
+class Dynamics:
+    """Encapsulates the dynamic parameters for the Bravo 7."""
+
+    Md: np.ndarray
+    Kp: np.ndarray
+    Kd: np.ndarray
+    Kf: np.ndarray
+
+
 class AdmittanceController:
     """A demonstration of admittance control with the Reach Bravo 7 manipulator."""
 
-    def __init__(self) -> None:
+    def __init__(self, dynamics: Dynamics) -> None:
         """Create a new admittance controller instance."""
         self._bravo = BravoDriver()
         self._running = False
+        self.dynamics = dynamics
 
         # Attach the packet callbacks
         self._bravo.attach_callback(PacketID.ATI_FT_READING, self._save_ft_readings_cb)

@@ -2,3 +2,4 @@ numpy
 crc
 cobs
 pytest
+kinpy
