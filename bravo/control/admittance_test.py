@@ -1,9 +1,15 @@
 import kinpy as kp
 import numpy as np
 
-
-bravo = kp.build_serial_chain_from_urdf(open("C:/Users/marcu/OneDrive/Documents/GitHub/bravo-admittance-control/bravo/urdf/bravo7.urdf").read(), "ee_link")
-jc = bravo.jacobian([0.0] * 9) # 6 body joints, 1 prismatic joint for gripper and 2 revolute joints for jaw joints
+bravo = kp.build_serial_chain_from_urdf(
+    open(
+        "C:/Users/marcu/OneDrive/Documents/GitHub/bravo-admittance-control/bravo/urdf/bravo7.urdf"
+    ).read(),
+    "ee_link",
+)
+jc = bravo.jacobian(
+    [0.0] * 9
+)  # 6 body joints, 1 prismatic joint for gripper and 2 revolute joints for jaw joints
 
 ## Getting joint velocities from jacobian with input linear ee velocities
 # end_eff_vel = np.zeros([6, 1])
@@ -12,7 +18,7 @@ jc = bravo.jacobian([0.0] * 9) # 6 body joints, 1 prismatic joint for gripper an
 # print(joint_vel)
 
 # Select which joints to set as active
-selection_mat = np.zeros([6, 1]) 
+selection_mat = np.zeros([6, 1])
 selection_mat[5] = 1
 # WHERE SHOULD WE APPLY THIS INTO OUR FORMULATION
 
@@ -28,10 +34,10 @@ x_d = np.array([0, 0, 0, 0, 0, 0])  # Desired ee-position
 f_e = np.array([0, 0, 0, 0, 0, 1])  # Current ee-force
 f_d = np.array([0, 0, 0, 0, 0, 0.1])  # Desired ee-force
 
-# Equation to follow 
-    # y = J(q)^-1 * Md^-1 * (-Kd * x_e_dot + Kp * (x_error - f_error) - Md * J_dot(q, q_dot) * q_dot)
-    #     [--- outer ---] * [------------------------------ inner ----------------------------------]
-    # Currently ignoring the second order jacobian term since I do not know how to deal with it
+# Equation to follow
+# y = J(q)^-1 * Md^-1 * (-Kd * x_e_dot + Kp * (x_error - f_error) - Md * J_dot(q, q_dot) * q_dot)
+#     [--- outer ---] * [------------------------------ inner ----------------------------------]
+# Currently ignoring the second order jacobian term since I do not know how to deal with it
 
 # Controller formulation
 x_error = x_d - x_e
