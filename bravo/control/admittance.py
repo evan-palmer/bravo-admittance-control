@@ -1,13 +1,13 @@
-from argparse import ArgumentParser, Namespace
 import atexit
 import struct
 import sys
 import threading
 import time
+from argparse import ArgumentParser, Namespace
 
+import kinpy as kp
 import numpy as np
 import yaml  # type: ignore
-import kinpy as kp
 
 sys.path.append("..")
 

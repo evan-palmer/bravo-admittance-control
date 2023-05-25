@@ -1,7 +1,8 @@
+from math import pi
+
 import kinpy as kp
 import numpy as np
 import pybullet as p
-from math import pi
 
 physicsClient = p.connect(p.DIRECT)  # Non-graphical version
 

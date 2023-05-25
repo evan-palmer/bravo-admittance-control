@@ -6,7 +6,7 @@ from typing import Callable
 
 sys.path.append("..")
 
-from protocol import PacketID, Packet  # noqa
+from protocol import Packet, PacketID  # noqa
 
 
 class BravoDriver:
