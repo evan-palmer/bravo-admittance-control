@@ -80,5 +80,8 @@ class BravoDriver:
                 except Exception:
                     ...
                 else:
-                    for func in self.callbacks[packet.packet_id]:
-                        func(packet)
+                    try:
+                        for func in self.callbacks[packet.packet_id]:
+                            func(packet)
+                    except:
+                        ...

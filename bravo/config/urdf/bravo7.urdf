@@ -18,7 +18,6 @@
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="world"/>
     <child link="base_link"/>
-    <origin rpy="0 0 0" xyz="0 0 0"/>
     <dynamics damping="10.0" friction="0.0"/>
   </joint>
   <link name="ee_link"/>
@@ -259,6 +258,20 @@
       <origin rpy="0.0 0.0 0.0" xyz="0.0408 0.0 -0.05385"/>
     </collision>
   </link>
+  <link name="ft_sensor_link">
+    <inertial>
+      <origin rpy="0.0 -0.0 0.0" xyz="0.0 0.0 0.0"/>
+      <mass value="0.05"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001"/>
+    </inertial>
+    <visual>
+      <geometry>  
+        <cylinder length="0.041275" radius="0.0402"/>
+      </geometry>
+      <material name="bravo_finger_jaws_black"/>
+      <origin rpy="0.0 -0.0 0.0" xyz="0.0 0.0 0.0"/>
+    </visual>
+  </link>
   <link name="bravo_1023_1_joint_link">
     <inertial>
       <origin xyz="0.0 0.003 -0.098"/>
@@ -387,10 +400,18 @@
   <joint name="bravo_axis_b" type="revolute">
     <dynamics damping="10.0" friction="0.0"/>
     <limit effort="500.0" lower="0.0" upper="6.2" velocity="3.0"/>
-    <parent link="bravo_1023_0_joint_link"/>
+    <parent link="ft_sensor_link"/>
     <child link="bravo_1023_1_joint_link"/>
     <axis xyz=" 0.  0. -1."/>
-    <origin rpy="3.14159 -0.0 0.6" xyz="0.0408 -1.326794896676365e-09 -0.09434999999999824"/>
+    <origin rpy="0 -0.0 0.0" xyz="0 0 0.020"/>
+  </joint>
+    <joint name="ft_sensor_joint" type="fixed">
+    <dynamics damping="10.0" friction="0.0"/>
+    <limit effort="500.0" lower="0.0" upper="6.2" velocity="3.0"/>
+    <parent link="bravo_1023_0_joint_link"/>
+    <child link="ft_sensor_link"/>
+    <axis xyz=" 0.  0. -1."/>
+    <origin rpy="3.14159 -0.0 0.6" xyz="0.0408 -1.326794896676365e-09 -0.115"/>
   </joint>
   <joint name="bravo_axis_c" type="revolute">
     <dynamics damping="10.0" friction="0.0"/>
