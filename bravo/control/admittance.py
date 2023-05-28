@@ -204,6 +204,15 @@ class AdmittanceController:
 
             print(vd)
 
+            # TODO(evan): Uncomment this once we verify the controller
+            # packet = Packet(
+            #     DeviceID.ALL_JOINTS,
+            #     PacketID.VELOCITY,
+            #     struct.pack(">ffffff", *vd),
+            # )
+
+            # self._bravo.send(packet)
+
 
 def create_admittance_controller_from_file(
     config_fp: str, urdf_fp: str
