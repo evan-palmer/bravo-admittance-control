@@ -187,7 +187,7 @@ class AdmittanceController:
                 np.array([0, 0, 0.041275]),
                 R.from_euler(
                     "xyz",
-                    [0, 0, self.joint_positions[-2]],
+                    [0, 0, self.joint_positions[1]],
                 ),
             )
 
