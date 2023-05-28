@@ -3,18 +3,19 @@ import struct
 import sys
 import threading
 import time
-from typing import Any
 from argparse import ArgumentParser, Namespace
+from typing import Any
 
-from scipy.spatial.transform import Rotation as R
 import kinpy as kp
 import numpy as np
 import yaml  # type: ignore
+from scipy.spatial.transform import Rotation as R
 
 sys.path.append("..")
 
 from driver import BravoDriver  # noqa
 from protocol import DeviceID, Packet, PacketID  # noqa
+from utils import transform_forces  # noqa
 
 
 class AdmittanceController:
@@ -81,7 +82,7 @@ class AdmittanceController:
 
         # Run the controller in it's own thread
         self.controller_t = threading.Thread(target=self._run_controller)
-        self.controller_t.daemone = True
+        self.controller_t.daemon = True
 
         atexit.register(self.disable)
 
@@ -102,7 +103,7 @@ class AdmittanceController:
         self.controller_t.join()
         self.request_readings_t.join()
 
-    def _request_packets(self, packets: dict[DeviceID, PacketID]) -> None:
+    def _request_packets(self, packets: dict[PacketID, DeviceID]) -> None:
         """Request packets from the Bravo 7.
 
         Args:
@@ -122,8 +123,8 @@ class AdmittanceController:
         Args:
             packet: The force-torque sensor reading packet.
         """
-        # TODO(evan): Transform this from the FT-sensor frame to the EE frame
-        forces = np.array(struct.unpack("<ffffff", packet.data))
+        # NOTE: These are saved in the FT-sensor frame
+        self.forces = np.array(struct.unpack("<ffffff", packet.data))
 
     def _read_joint_positions_cb(self, packet: Packet) -> None:
         """Read the joint positions from the Bravo 7.
@@ -165,21 +166,44 @@ class AdmittanceController:
         self._bravo.send(tare)
 
     def _run_controller(self) -> None:
+        """Run the parallel admittance/pose controller."""
         while self._running:
-            # Calculate the Jacobian and it's time derivative
+            # Calculate the Jacobian
             jc = self.serial_chain.jacobian(self.joint_positions[::-1])
 
-            # Get the current end-effector pose
-            xe_transform = self.serial_chain.forward_kinematics(self.joint_positions[::-1])
-            xe_rot = R.from_quat(xe_transform.rot).as_euler("xyz", degrees=True)
-            xe = np.array([*xe_transform.pos, *xe_rot])
+            # Get the current end-effector pose in the base frame as a numpy array
+            xe_transform = self.serial_chain.forward_kinematics(
+                self.joint_positions[::-1]
+            )
+            xe_rot = R.from_quat(xe_transform.rot)
+            xe = np.array([*xe_transform.pos, *xe_rot.as_euler("xyz")])
 
-            # Calculate the end effector velocity
+            # Calculate the end effector velocity in the base frame
             ve = jc @ np.array(self.joint_velocities[::-1])
 
-            vd = np.linalg.pinv(jc) @ np.linalg.pinv(self.Md) @ (-self.Kd @ ve - self.Kp @ (self.xd - xe + self.Kf @ (self.fd - self.B @ np.array(self.forces))))
+            # Transform the FT-sensor reading from the sensor frame to the EE frame
+            forces = transform_forces(
+                self.forces,
+                np.array([0, 0, 0.041275]),
+                R.from_euler(
+                    "xyz",
+                    [0, 0, self.joint_positions[-2]],
+                ),
+            )
+
+            # Get the desired velocities given the reference position and force
+            vd = (
+                np.linalg.pinv(jc)
+                @ np.linalg.pinv(self.Md)
+                @ (
+                    -self.Kd @ ve
+                    - self.Kp
+                    @ (self.xd - xe + self.Kf @ (self.fd - self.B @ np.array(forces)))
+                )
+            )
 
             print(vd)
+
 
 def create_admittance_controller_from_file(
     config_fp: str, urdf_fp: str

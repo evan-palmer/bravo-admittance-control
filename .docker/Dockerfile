@@ -5,6 +5,7 @@ RUN apt-get -q update \
     && apt-get -q -y upgrade \
     && apt-get -q install --no-install-recommends -y \
     git \
+    gcc \
     python3 \
     python3-dev \
     python3-pip \
@@ -42,5 +43,5 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && rm -rf /var/lib/apt/lists/* \
     && echo "source /usr/share/bash-completion/completions/git" >> /home/$USERNAME/.bashrc \
 
-ARG WORKSPACE
+    ARG WORKSPACE
 RUN echo "if [ -f ${WORKSPACE}/install/setup.bash ]; then source ${WORKSPACE}/install/setup.bash; fi" >> /home/$USERNAME/.bashrc
