@@ -7,6 +7,7 @@ from typing import Callable
 sys.path.append("..")
 
 from protocol import Packet, PacketID  # noqa
+from utils import init_logger
 
 
 class BravoDriver:
@@ -22,6 +23,7 @@ class BravoDriver:
         self.address = (ip, port)
         self.callbacks: dict[PacketID, list[Callable]] = {}
         self._running = False
+        self.logger = init_logger("BravoDriver")
 
         # Configure a new socket with the Bravo
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -36,11 +38,13 @@ class BravoDriver:
         """Connect the driver to the Bravo 7."""
         self._running = True
         self.poll_t.start()
+        self.logger.info("Successfully established a connection to the Reach Bravo 7 manipulator.")
 
     def disconnect(self) -> None:
         """Disconnect the driver from the Bravo 7."""
         self._running = False
         self.poll_t.join()
+        self.logger.info("Successfully shut down the connection to the Reach Bravo 7 manipulator.")
 
     def send(self, packet: Packet):
         """Send a packet to the Bravo 7.
