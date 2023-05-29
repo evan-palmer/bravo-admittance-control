@@ -31,6 +31,9 @@ class AdmittanceController:
         fd: np.ndarray,
         xd: np.ndarray,
         serial_chain: Any,
+        joint_limits: np.ndarray = np.array(
+            [0.0873, 0.0873, 0.0873, 0.0873, 0.0873, 0.0873, 0.01]
+        ),
     ) -> None:
         """Create a new admittance controller.
 
@@ -56,6 +59,7 @@ class AdmittanceController:
         self.fd = fd  # Desired forces
         self.xd = xd  # Desired end-effector pose
         self.serial_chain = serial_chain
+        self.joint_limits = joint_limits
 
         # Robot state
         self.joint_positions = np.array([0.0] * 7)
@@ -202,6 +206,14 @@ class AdmittanceController:
                 )
             )
 
+            # Clamp the joint velocities to the joint limits
+            vd = np.array(
+                [
+                    max(-self.joint_limits[i], min(self.joint_limits[i], vel))
+                    for i, vel in enumerate(vd)
+                ]
+            )
+
             print(vd)
 
             # TODO(evan): Uncomment this once we verify the controller
@@ -238,11 +250,21 @@ def create_admittance_controller_from_file(
         B = np.array(config["B"])
         fd = np.array(config["fd"])
         xd = np.array(config["xd"])
+        joint_limits = np.array(config["joint_limits"])
 
     # Get the serial chain using the Bravo 7 URDF
     serial_chain = kp.build_serial_chain_from_urdf(open(urdf_fp).read(), "ee_link")
 
-    return AdmittanceController(Md, Kp, Kd, Kf, B, fd, xd, serial_chain)
+    return AdmittanceController(
+        Md,
+        Kp,
+        Kd,
+        Kf,
+        B,
+        fd,
+        xd,
+        serial_chain,
+    )
 
 
 def get_args() -> Namespace:
