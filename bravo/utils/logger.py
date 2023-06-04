@@ -1,7 +1,9 @@
 import logging
 import os
 from datetime import datetime
-import numpy as np 
+
+import numpy as np
+
 
 def init_logger(name: str, log_level: int = logging.INFO) -> logging.Logger:
     logging.basicConfig()
@@ -9,6 +11,7 @@ def init_logger(name: str, log_level: int = logging.INFO) -> logging.Logger:
     logger.setLevel(log_level)
 
     return logger
+
 
 class FileLogger:
     """File logging handler."""
@@ -28,13 +31,23 @@ class FileLogger:
 
         self.log_file = open(filename, "w")  # type: ignore
 
-        self.log_file.write("timestamp,joint_position,joint_velocity,forces,desired_velocity\n")
+        self.log_file.write(
+            "timestamp,joint_position,joint_velocity,forces,desired_velocity\n"
+        )
 
         return
 
-    def __call__(self, timestamp: int, joint_positions: np.ndarray, joint_velocities: np.ndarray, forces: np.ndarray, desired_velocity: np.ndarray) -> None:
+    def __call__(
+        self,
+        timestamp: float,
+        joint_positions: np.ndarray,
+        joint_velocities: np.ndarray,
+        forces: np.ndarray,
+        desired_velocity: np.ndarray,
+    ) -> None:
         self.log_file.write(
-            f"{timestamp},{joint_positions},{joint_velocities},{forces},{desired_velocity}\n"
+            f"{timestamp},{joint_positions},{joint_velocities},{forces},"
+            f"{desired_velocity}\n"
         )
 
         return

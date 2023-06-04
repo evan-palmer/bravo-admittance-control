@@ -38,13 +38,17 @@ class BravoDriver:
         """Connect the driver to the Bravo 7."""
         self._running = True
         self.poll_t.start()
-        self.logger.info("Successfully established a connection to the Reach Bravo 7 manipulator.")
+        self.logger.info(
+            "Successfully established a connection to the Reach Bravo 7 manipulator."
+        )
 
     def disconnect(self) -> None:
         """Disconnect the driver from the Bravo 7."""
         self._running = False
         self.poll_t.join()
-        self.logger.info("Successfully shut down the connection to the Reach Bravo 7 manipulator.")
+        self.logger.info(
+            "Successfully shut down the connection to the Reach Bravo 7 manipulator."
+        )
 
     def send(self, packet: Packet):
         """Send a packet to the Bravo 7.

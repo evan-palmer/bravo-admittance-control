@@ -1,2 +1,2 @@
+from .logger import FileLogger, init_logger
 from .transforms import transform_forces
-from .logger import init_logger, FileLogger

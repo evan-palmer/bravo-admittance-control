@@ -4,8 +4,8 @@ import sys
 import threading
 import time
 from argparse import ArgumentParser, Namespace
-from typing import Any
 from collections import deque
+from typing import Any
 
 import kinpy as kp
 import numpy as np
@@ -16,7 +16,7 @@ sys.path.append("..")
 
 from driver import BravoDriver  # noqa
 from protocol import DeviceID, Packet, PacketID  # noqa
-from utils import transform_forces, init_logger, FileLogger  # noqa
+from utils import FileLogger, init_logger, transform_forces  # noqa
 
 
 class AdmittanceController:
@@ -36,7 +36,7 @@ class AdmittanceController:
             [0.0873, 0.0873, 0.0873, 0.0873, 0.0873, 0.0873, 0.01]
         ),
         deadband: tuple[float, float] = (-0.07, 0.07),
-        current_limits: tuple[float, float] = (-150, 200)
+        current_limits: tuple[float, float] = (-150, 200),
     ) -> None:
         """Create a new admittance controller.
 
@@ -72,7 +72,7 @@ class AdmittanceController:
         self.joint_positions = np.array([0.0] * 7)
         self.joint_velocities = np.array([0.0] * 7)
         self.forces = np.array([0.0] * 6)
-        self.forces_buffer = deque(maxlen=20)
+        self.forces_buffer: deque[np.ndarray] = deque(maxlen=20)
 
         # Attach the packet callbacks
         self._bravo.attach_callback(PacketID.ATI_FT_READING, self._read_ft_readings_cb)
@@ -105,9 +105,6 @@ class AdmittanceController:
         self.request_readings_t.start()
         self.controller_t.start()
 
-        # current_limit_packet = Packet(DeviceID.ALL_JOINTS, PacketID.CURRENT_LIMITS, struct.pack(">ff", self.current_limits[1], self.current_limits[0]))
-        # self._bravo.send(current_limit_packet)
-
         self.logger.warning("Admittance control has been enabled.")
 
         # Tare the FT sensor on startup
@@ -120,7 +117,7 @@ class AdmittanceController:
         self.controller_t.join()
         self.request_readings_t.join()
 
-        self.logger.warning("Admittance conrol has been disabled.")
+        self.logger.warning("Admittance control has been disabled.")
 
     def _request_packets(self, packets: dict[PacketID, DeviceID]) -> None:
         """Request packets from the Bravo 7.
@@ -173,7 +170,7 @@ class AdmittanceController:
             velocity *= 0.001
 
         # Save the joint velocities at the same index as their ID
-        self.joint_velocities[packet.device_id.value - 1] = velocity 
+        self.joint_velocities[packet.device_id.value - 1] = velocity
 
     def tare_ft_sensor(self) -> None:
         """Tare the Bravo 7 force-torque sensor."""
@@ -207,14 +204,16 @@ class AdmittanceController:
                 np.array([0, 0, 0.041275]),
                 R.from_euler(
                     "xyz",
-                    [0] * 3, # The force transformation is just a translation
+                    [0] * 3,  # The force transformation is just a translation
                 ),
             )
-            
+
             # Apply a running average filter over the force readings
             self.forces_buffer.append(forces)
             forces_buffer_arr = np.array([reading for reading in self.forces_buffer])
-            forces_filtered = np.cumsum(forces_buffer_arr, axis=1)[0] / len(self.forces_buffer)
+            forces_filtered = np.cumsum(forces_buffer_arr, axis=1)[0] / len(
+                self.forces_buffer
+            )
 
             # Get the desired velocities given the reference position and force
             vd = (
@@ -236,18 +235,27 @@ class AdmittanceController:
             # )
 
             # Create a deadband zone for the Bravo to help reduce chatter
-            vd = np.array([0 if self.deadband[0] <= vel <= self.deadband[1] else vel for vel in vd])
+            vd = np.array(
+                [
+                    0 if self.deadband[0] <= vel <= self.deadband[1] else vel
+                    for vel in vd
+                ]
+            )
 
-            self._file_logger(time.time(), self.joint_positions.round(3), self.joint_velocities.round(3), forces.round(3), vd)
+            self._file_logger(
+                time.time(),
+                self.joint_positions.round(3),
+                self.joint_velocities.round(3),
+                forces.round(3),
+                vd,
+            )
 
-            # self.logger.info(f"Desired Velocity: {vd.round(3)}")
-            # print(forces.round(3))
-            print(vd.round(3))
-
-            # We need to send the velocity to each joint individually. The arm doesn't like when
-            # we send them using the ALL_JOINTS DeviceID.
+            # We need to send the velocity to each joint individually. The arm doesn't
+            # like when we send them using the ALL_JOINTS DeviceID.
             for i, vel in enumerate(vd[::-1]):
-                self._bravo.send(Packet(DeviceID(i + 1), PacketID.VELOCITY, struct.pack(">f", vel)))
+                self._bravo.send(
+                    Packet(DeviceID(i + 1), PacketID.VELOCITY, struct.pack(">f", vel))
+                )
 
 
 def create_admittance_controller_from_file(
@@ -292,7 +300,7 @@ def create_admittance_controller_from_file(
         serial_chain,
         joint_limits=joint_limits,
         deadband=deadband,
-        current_limits=current_limits
+        current_limits=current_limits,
     )
 
 
