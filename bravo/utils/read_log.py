@@ -2,9 +2,9 @@ from ast import literal_eval
 import re
 import matplotlib.pyplot as plt
 import itertools
-#!!! Important: Delete the first line "timestamp, etc"
+
 #!!! Change [infile] below
-infile = r"C:\Users\nnamd\Downloads\2023-06-05-07-29-00.log"
+infile = r"C:\Users\nnamd\Downloads\2023-06-05-08-49-44.log"
 
 #Converted/Stored data
 time = []
@@ -38,14 +38,14 @@ def combine_lines(log_lines):
     i = 0
     while i < len(log_lines):
         line1 = log_lines[i].strip()
-        line2 = log_lines[i + 1].strip() if i < len(log_lines) - 1 else None
+        line2 = log_lines[i + 1].strip() if i < len(log_lines) - 1 and line1[-1]!=']' else None
         if line1 != line2:
             combined_lines.append(line1 + ' ' + (line2 or ''))
         i += 2
     return combined_lines
 
 
-def extract_data(combined_lines):
+def extract_data(combined_lines, start_time):
     "Takes array of strings of data, cleans and stores data"
     for line in combined_lines:
         #Remove weird 0 entries and split into arrays
@@ -64,10 +64,10 @@ def extract_data(combined_lines):
         data[4] = re.sub(' +', ' ', data[4])
 
         #Add commas between numbers and some corrections
-        j_pos = data[1].replace(" ", ",")
-        j_vel = data[2].replace(" ", ",")
-        force = data[3].replace(" ", ",")
-        d_vel = data[4].replace(" ", ",") 
+        j_pos = data[1].strip().replace(" ", ",")
+        j_vel = data[2].strip().replace(" ", ",")
+        force = data[3].strip().replace(" ", ",")
+        d_vel = data[4].strip().replace(" ", ",") 
         d_vel = d_vel.replace(",,", ",")
         force = force.replace(",,", ",")
         timestamp = float(data[0])
@@ -77,13 +77,18 @@ def extract_data(combined_lines):
         joint_velocity.append(convert(j_vel))
         forces.append(convert(force))
         desired_velocity.append(convert(d_vel))
-        time.append(timestamp-1685975340.38633)
+        time.append(timestamp-start_time)
         
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Main
 
 log_lines = read_lines()
 combined_lines = combine_lines(log_lines)
-extract_data(combined_lines)
+
+#Remove first line
+del combined_lines[0]
+
+#Proess data
+extract_data(combined_lines, 1685980184.180736)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Output/Graphs
 #Forces
@@ -146,18 +151,18 @@ plt.show()
 
 #plt.plot(time,joint_v1,label = 'Measured Joint 1 Velocity')
 #plt.plot(time,joint_v2, label = 'Measured Joint 2 velocity')
-plt.plot(time,joint_v3, label = 'Measured Joint 3 Velocity')
+#plt.plot(time,joint_v3, label = 'Measured Joint 3 Velocity')
 #plt.plot(time,joint_v4, label = 'Measured Joint 4 velocity')
-#plt.plot(time,joint_v5, label = 'Measured Joint 5 velocity')
-#plt.plot(time,joint_v6, label = 'Measured Joint 6 velocity')
+plt.plot(time,joint_v5, label = 'Measured Joint 5 velocity')
+plt.plot(time,joint_v6, label = 'Measured Joint 6 velocity')
 #plt.plot(time,joint_v7, label = 'Measured Joint 7 velocity')
 
 #plt.plot(time, desired_v1, label='Desired Joint 1 Velocity')
-#plt.plot(time, desired_v2,  label='Desired Joint 2 Velocity')
-plt.plot(time, desired_v3,  label='Desired Joint 3 Velocity')
+#plt.plot(time, desired_v2,  label='Desired Joint 2 Velocity')#
+#plt.plot(time, desired_v3,  label='Desired Joint 3 Velocity')
 #plt.plot(time, desired_v4,  label='Desired Joint 4 Velocity')
 #plt.plot(time, desired_v5,  label='Desired Joint 5 Velocity')
-#plt.plot(time, desired_v6,  label='Desired Joint 6 Velocity')
+plt.plot(time, desired_v6,  label='Desired Joint 6 Velocity')
 #plt.plot(time, desired_v7,  label='Desired Joint 7 Velocity')
 plt.ylabel("Velocity (m/s)")
 plt.xlabel("Time (s)")
