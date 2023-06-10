@@ -2,6 +2,7 @@ import itertools
 import kinpy 
 import re
 from ast import literal_eval
+import numpy as np
 
 import matplotlib.pyplot as plt
 
@@ -115,9 +116,9 @@ for entry in joint_position:
     xe_transform = serial_chain.forward_kinematics(
         entry[::-1]
     )
-    x_e.append(xe_transform)
+    x_to_array = np.array([*xe_transform.pos])
+    x_e.append(x_to_array)
     #print(xe_transform)
-
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Output/Graphs
