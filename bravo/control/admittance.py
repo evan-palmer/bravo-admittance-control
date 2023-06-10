@@ -36,7 +36,6 @@ class AdmittanceController:
             [0.0873, 0.0873, 0.0873, 0.0873, 0.0873, 0.0873, 0.01]
         ),
         deadband: tuple[float, float] = (-0.07, 0.07),
-        current_limits: tuple[float, float] = (-150, 200),
     ) -> None:
         """Create a new admittance controller.
 
@@ -50,6 +49,8 @@ class AdmittanceController:
             fd: The desired force to apply.
             xd: The desired end-effector pose.
             serial_chain: A serial chain built from the Bravo 7 URDF.
+            joint_limits: The maximum velocity of each joint.
+            deadband: Clamp all velocity commands in this range to zero.
         """
         self._bravo = BravoDriver()
         self._running = False
@@ -66,7 +67,6 @@ class AdmittanceController:
         self.serial_chain = serial_chain
         self.joint_limits = joint_limits
         self.deadband = deadband
-        self.current_limits = current_limits
 
         # Robot state
         self.joint_positions = np.array([0.0] * 7)
@@ -227,12 +227,12 @@ class AdmittanceController:
             )
 
             # Clamp the joint velocities to the joint limits
-            # vd = np.array(
-            #     [
-            #         max(-self.joint_limits[i], min(self.joint_limits[i], vel))
-            #         for i, vel in enumerate(vd)
-            #     ]
-            # )
+            vd = np.array(
+                [
+                    max(-self.joint_limits[i], min(self.joint_limits[i], vel))
+                    for i, vel in enumerate(vd)
+                ]
+            )
 
             # Create a deadband zone for the Bravo to help reduce chatter
             vd = np.array(
@@ -283,8 +283,7 @@ def create_admittance_controller_from_file(
         fd = np.array(config["fd"])
         xd = np.array(config["xd"])
         joint_limits = np.array(config["joint_limits"])
-        deadband = tuple(config["deadband"])
-        current_limits = tuple(config["current_limits"])
+        deadband: tuple[float, float] = tuple(config["deadband"])  # type: ignore
 
     # Get the serial chain using the Bravo 7 URDF
     serial_chain = kp.build_serial_chain_from_urdf(open(urdf_fp).read(), "ee_link")
@@ -300,7 +299,6 @@ def create_admittance_controller_from_file(
         serial_chain,
         joint_limits=joint_limits,
         deadband=deadband,
-        current_limits=current_limits,
     )
 
 
