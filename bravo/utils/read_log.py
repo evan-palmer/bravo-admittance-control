@@ -2,9 +2,14 @@ from ast import literal_eval
 import re
 import matplotlib.pyplot as plt
 import itertools
-
+import kinpy 
 #!!! Change [infile] below
 infile = r"C:\Users\nnamd\Downloads\2023-06-05-08-49-44.log"
+urdf_file = r"N:\Projects\bravo-admittance-control\bravo\config\bravo.urdf"
+serial_chain = kinpy.build_serial_chain_from_urdf(open(urdf_file).read(), "ee_link")
+
+
+
 
 #Converted/Stored data
 time = []
@@ -90,6 +95,20 @@ del combined_lines[0]
 #Proess data
 extract_data(combined_lines, 1685980184.180736)
 
+
+
+#position data
+x_e = []
+# Get the current end-effector pose in the base frame as a numpy array
+for entry in joint_position:
+    xe_transform = serial_chain.forward_kinematics(
+        entry[::-1]
+    )
+    x_e.append(xe_transform)
+    #print(xe_transform)
+
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Output/Graphs
 #Forces
 forces_x = getIndexAsArray(forces, 0)
@@ -124,27 +143,35 @@ joint_pos5 = getIndexAsArray(joint_position, 4)
 joint_pos6 = getIndexAsArray(joint_position, 5)
 joint_pos7 = getIndexAsArray(joint_position, 6)
 
+final_x = getIndexAsArray(xe_transform, 2)
+
+#fig, axs = plt.subplots(3,1)
 """Plotting External Forces"""
 plt.plot(time, forces_x, label = 'X Forces')
+plt.title('X-Axis Forces Over Time')
 #plt.plot(time, forces_y, label = 'Y Forces')
 #plt.plot(time, forces_z, label = 'Z Forces')
-plt.xlabel("Time (s)")
-plt.ylabel("Force (N)")
+plt.set_xlabel("Time (s)")
+plt.set_ylabel("Force (N)")
+plt.legend()
+
+
+"""Plotting Joint Positions"""
+plt.plot(time,joint_pos1, label = 'Joint 1 Position')
+plt.plot(time,joint_pos2, label = 'Joint 2 Position')
+plt.plot(time,joint_pos3, label = 'Joint 3 Position')
+plt.plot(time,joint_pos4, label = 'Joint 4 Position')
+plt.plot(time,joint_pos5, label = 'Joint 5 Position')
+plt.plot(time,joint_pos6, label = 'Joint 6 Position')
+plt.plot(time,joint_pos7, label = 'Joint 7 Position')
+plt.ylabel('Radians')
+plt.xlabel('Time (s)')
 plt.legend()
 plt.show()
 
-"""Plotting Joint Positions"""
-#plt.plot(time,joint_pos1, label = 'Joint 1 Position')
-#plt.plot(time,joint_pos2, label = 'Joint 2 Position')
-#plt.plot(time,joint_pos3, label = 'Joint 3 Position')
-#plt.plot(time,joint_pos4, label = 'Joint 4 Position')
-#plt.plot(time,joint_pos5, label = 'Joint 5 Position')
-#plt.plot(time,joint_pos6, label = 'Joint 6 Position')
-#plt.plot(time,joint_pos7, label = 'Joint 7 Position')
-#plt.ylabel('Radians')
-#plt.xlabel('Time (s)')
-#plt.legend()
-#plt.show()
+
+plt.plot(time, final_x)
+
 
 
 """Plotting Velocities (Measured + Desired)"""
@@ -153,8 +180,8 @@ plt.show()
 #plt.plot(time,joint_v2, label = 'Measured Joint 2 velocity')
 #plt.plot(time,joint_v3, label = 'Measured Joint 3 Velocity')
 #plt.plot(time,joint_v4, label = 'Measured Joint 4 velocity')
-plt.plot(time,joint_v5, label = 'Measured Joint 5 velocity')
-plt.plot(time,joint_v6, label = 'Measured Joint 6 velocity')
+#plt.plot(time,joint_v5, label = 'Measured Joint 5 velocity')
+#plt.plot(time,joint_v6, label = 'Measured Joint 6 velocity')
 #plt.plot(time,joint_v7, label = 'Measured Joint 7 velocity')
 
 #plt.plot(time, desired_v1, label='Desired Joint 1 Velocity')
@@ -162,7 +189,7 @@ plt.plot(time,joint_v6, label = 'Measured Joint 6 velocity')
 #plt.plot(time, desired_v3,  label='Desired Joint 3 Velocity')
 #plt.plot(time, desired_v4,  label='Desired Joint 4 Velocity')
 #plt.plot(time, desired_v5,  label='Desired Joint 5 Velocity')
-plt.plot(time, desired_v6,  label='Desired Joint 6 Velocity')
+#plt.plot(time, desired_v6,  label='Desired Joint 6 Velocity')
 #plt.plot(time, desired_v7,  label='Desired Joint 7 Velocity')
 plt.ylabel("Velocity (m/s)")
 plt.xlabel("Time (s)")
