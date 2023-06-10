@@ -15,14 +15,14 @@ bravo = importrobot('bravo7.urdf', DataFormat='row');
 % Kf = diag([0, 0.415, 0.1, 0, 0, 0]);
 % B = diag([0, 1, 1, 0, 0, 0]);
 
-% (XY) ee-frame - DIDNT DO ANYTHING
+% (XY) ee-frame - DIDN'T DO ANYTHING
 % Md = diag([5, 5, 0, 0, 0, 0]);
 % Kp = diag([1, 0.25, 0, 0, 0, 0]);
 % Kd = diag([1, 0.001, 0, 0, 0, 0]);
 % Kf = diag([1, 0.415, 0, 0, 0, 0]);
 % B = diag([1, 1, 0, 0, 0, 0]);
 
-% (XYZ) ee-frame - EHHH DIDNT REALLY LIKE IT
+% (XYZ) ee-frame - EHHH DIDN'T REALLY LIKE IT
 % Md = diag([10, 100, 10, 0, 0, 0]);
 % Kp = diag([10, 50, 10, 0, 0, 0]);
 % Kd = diag([10, 10, 10, 0, 0, 0]);
@@ -90,7 +90,7 @@ end
 for i = 1:length(t)
     % Compute jacobian
     jc = geometricJacobian(bravo, q(i, :), 'ee_link');
-    
+
     % End-effector position and orientation
     xe_transform = getTransform(bravo, q(i, :), 'ee_link', 'world');
     xe_rot = xe_transform(1:3, 1:3);
@@ -110,7 +110,7 @@ for i = 1:length(t)
     % Without ee-position error
     qdot(i + 1, :) = pinv(jc) * pinv(Md) * (-Kd * ve + Kp * (Kf * f_error(i, :)'));
 
-    % Clamp joint velocity 
+    % Clamp joint velocity
     for k = 1:length(qdot(i + 1, :))
         if qdot(i + 1, k) > 0.0833
             qdot(i + 1, k) = 0.0833;
@@ -118,11 +118,11 @@ for i = 1:length(t)
         if qdot(i + 1, k) < -0.0833
             qdot(i + 1, k) = -0.0833;
         end
-    end    
-    
+    end
+
     % Integrate velocity to get joint positions
     q(i + 1, :) = q(i, :) + qdot(i + 1, :) * dt;
-    
+
     % Clamp joint angle changes
     if q(i + 1, 2) > 3.14
         q(i + 1, 2) = 3.14;
@@ -133,7 +133,7 @@ for i = 1:length(t)
     if q(i + 1, 5) > 3.14
         q(i + 1, 5) = 3.14;
     end
-    
+
 end
 disp('finished simulation')
 
@@ -157,7 +157,7 @@ hold on
 plot(t, q(1:end-1, 2)')
 hold on
 plot(t, q(1:end-1, 3)')
-hold on 
+hold on
 plot(t, q(1:end-1, 4)')
 hold on
 plot(t, q(1:end-1, 5)')
@@ -186,6 +186,3 @@ plot(t, wrench(:, 2)')
 xlabel('time (s)')
 ylabel('force (N)')
 title('End-effector force')
-
-
-
